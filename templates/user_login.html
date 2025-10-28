@@ -1,12 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}Participant Login - iCapture{% endblock %}
+{% block title %}Participant Login - i-Capture{% endblock %}
 
 {% block content %}
 <div class="login-container">
+    <div class="logo-section">
+        <h1 class="logo-title"><i class="fas fa-camera"></i> i-Capture</h1>
+    </div>
+    
     <div class="login-card">
         <div class="login-header">
-            <h1><i class="fas fa-user"></i> Participant Login</h1>
+            <h2><i class="fas fa-user"></i> Participant Login</h2>
             <p>Access your upload dashboard</p>
         </div>
         
@@ -32,93 +36,269 @@
             </button>
         </form>
         
-        <div class="login-links">
-            <a href="{{ url_for('index') }}">
-                <i class="fas fa-arrow-left"></i> Back to Home
-            </a>
-            <span>|</span>
-            <a href="{{ url_for('admin_login') }}">
-                <i class="fas fa-user-shield"></i> Admin Login
-            </a>
-        </div>
         
-        <div class="login-help">
-            <h4><i class="fas fa-question-circle"></i> Need Help?</h4>
-            <p>Use your participant ID and phone number to login. Contact your administrator if you don't have these credentials.</p>
-        </div>
+       
     </div>
 </div>
 
 <style>
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.logo-section {
+    margin-bottom: 30px;
+    text-align: center;
+    width: 100%;
+}
+
+.logo-title {
+    color: #ffffff;
+    font-size: 3.5rem;
+    margin-bottom: 0;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+    letter-spacing: -1px;
+    white-space: nowrap;
+}
+
+.logo-title i {
+    color: #ffffff;
+    font-size: 3rem;
+    font-weight: 600;
+}
+
+.login-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    padding: 50px;
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+}
+
+.login-header h2 {
+    color: #2c3e50;
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.login-header h2 i {
+    color: #27ae60;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.login-header p {
+    color: #7f8c8d;
+    font-size: 1rem;
+    margin-bottom: 40px;
+    font-weight: 400;
+}
+
 .login-form {
+    margin-bottom: 40px;
+}
+
+.form-group {
     margin-bottom: 25px;
+    text-align: left;
 }
 
 .form-group label {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-    color: #333;
-    font-weight: 500;
-    font-size: 0.9rem;
+    gap: 10px;
+    margin-bottom: 12px;
+    color: #2c3e50;
+    font-weight: 600;
+    font-size: 1rem;
 }
 
 .form-group label i {
-    color: #4CAF50;
-    width: 16px;
+    color: #27ae60;
+    width: 20px;
+    font-size: 1.1rem;
+    font-weight: 600;
 }
 
-.login-links {
+.form-group input {
+    width: 100%;
+    padding: 15px 20px;
+    border: 2px solid #e1e5e9;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 400;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    color: #2c3e50;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #27ae60;
+    box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+}
+
+.form-group input::placeholder {
+    color: #bdc3c7;
+    font-weight: 400;
+}
+
+.btn {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
     display: flex;
-    justify-content: center;
     align-items: center;
-    gap: 15px;
-    margin-top: 20px;
-    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.login-links span {
-    color: #ccc;
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(39, 174, 96, 0.3);
+}
+
+.btn i {
+    font-weight: 600;
 }
 
 .login-help {
-    margin-top: 30px;
-    padding: 20px;
+    margin-top: 40px;
+    padding: 25px;
     background: rgba(76, 175, 80, 0.1);
-    border-radius: 10px;
-    border-left: 4px solid #4CAF50;
+    border-radius: 15px;
+    border-left: 5px solid #4CAF50;
 }
 
 .login-help h4 {
     color: #333;
-    margin-bottom: 10px;
-    font-size: 1rem;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
     font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    gap: 10px;
 }
 
 .login-help h4 i {
     color: #4CAF50;
+    font-size: 1.2rem;
 }
 
 .login-help p {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: #666;
-    line-height: 1.5;
+    line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+    .login-container {
+        padding: 15px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .login-card {
+        padding: 40px 30px;
+        margin: 0;
+        width: 100%;
+        max-width: none;
+        border-radius: 15px;
+    }
+    
+    .logo-title {
+        font-size: 2.8rem;
+    }
+    
+    .logo-title i {
+        font-size: 2.5rem;
+    }
+    
+    .login-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .form-group input {
+        padding: 12px 15px;
+    }
+    
+    .btn {
+        padding: 12px 30px;
+    }
 }
 
 @media (max-width: 480px) {
-    .login-links {
-        flex-direction: column;
-        gap: 10px;
+    .login-container {
+        padding: 10px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
     
-    .login-links span {
-        display: none;
+    .login-card {
+        padding: 30px 20px;
+        margin: 0;
+        width: 100%;
+        max-width: none;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+    
+    .logo-title {
+        font-size: 2.2rem;
+        flex-direction: row;
+        gap: 10px;
+        white-space: nowrap;
+    }
+    
+    .logo-title i {
+        font-size: 2rem;
+    }
+    
+    .login-header h2 {
+        font-size: 1.3rem;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group input {
+        padding: 14px 16px;
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    .btn {
+        padding: 14px 20px;
+        font-size: 1rem;
     }
 }
 </style>

@@ -49,7 +49,23 @@ class Admin(db.Model):
 # Routes
 @app.route('/')
 def index():
+    # If user is logged in, redirect to their dashboard
+    if session.get('user_logged_in'):
+        return redirect(url_for('user_dashboard'))
+    # If not logged in, redirect to login
+    return redirect(url_for('user_login'))
+
+@app.route('/home')
+def home():
     return render_template('index.html')
+
+@app.route('/admin')
+def admin():
+    # If admin is logged in, redirect to admin dashboard
+    if session.get('admin_logged_in'):
+        return redirect(url_for('admin_dashboard'))
+    # If not logged in, redirect to admin login
+    return redirect(url_for('admin_login'))
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
@@ -91,7 +107,7 @@ def add_college():
         db.session.commit()
         flash('College added successfully!', 'success')
     
-    return redirect(url_for('admin_dashboard'))
+    return redirect(url_for('admin_dashboard') + '?tab=colleges')
 
 @app.route('/admin/add_participant', methods=['POST'])
 def add_participant():
@@ -116,7 +132,78 @@ def add_participant():
         db.session.commit()
         flash('Participant added successfully!', 'success')
     
-    return redirect(url_for('admin_dashboard'))
+    return redirect(url_for('admin_dashboard') + '?tab=participants')
+
+@app.route('/admin/participants/<int:participant_id>/delete', methods=['POST'])
+def delete_participant(participant_id):
+    if not session.get('admin_logged_in'):
+        return jsonify(success=False, message='Unauthorized'), 401
+    participant = Participant.query.get_or_404(participant_id)
+    # Delete files from disk and db
+    uploads = FileUpload.query.filter_by(participant_id=participant_id).all()
+    user_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(participant_id))
+    for upload in uploads:
+        file_path = os.path.join(user_folder, upload.filename)
+        try:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+        except Exception:
+            pass
+        db.session.delete(upload)
+    try:
+        if os.path.isdir(user_folder) and not os.listdir(user_folder):
+            os.rmdir(user_folder)
+    except Exception:
+        pass
+    db.session.delete(participant)
+    db.session.commit()
+    return jsonify(success=True, message='Participant deleted')
+
+@app.route('/admin/participants/<int:participant_id>/edit', methods=['POST'])
+def edit_participant(participant_id):
+    if not session.get('admin_logged_in'):
+        return jsonify(success=False, message='Unauthorized'), 401
+    participant = Participant.query.get_or_404(participant_id)
+    data = request.get_json(silent=True) or {}
+    name = data.get('name')
+    phone = data.get('phone')
+    college_id = data.get('college_id')
+    if name:
+        participant.name = name
+    if phone:
+        participant.phone = phone
+    if college_id:
+        participant.college_id = int(college_id)
+    db.session.commit()
+    return jsonify(success=True, message='Participant updated')
+
+@app.route('/admin/colleges/<int:college_id>/delete', methods=['POST'])
+def delete_college(college_id):
+    if not session.get('admin_logged_in'):
+        return jsonify(success=False, message='Unauthorized'), 401
+    college = College.query.get_or_404(college_id)
+    if college.participants:
+        return jsonify(success=False, message='Cannot delete college with participants'), 400
+    db.session.delete(college)
+    db.session.commit()
+    return jsonify(success=True, message='College deleted')
+
+@app.route('/admin/colleges/<int:college_id>/edit', methods=['POST'])
+def edit_college(college_id):
+    if not session.get('admin_logged_in'):
+        return jsonify(success=False, message='Unauthorized'), 401
+    college = College.query.get_or_404(college_id)
+    data = request.get_json(silent=True) or {}
+    name = data.get('name')
+    if not name:
+        return jsonify(success=False, message='Name required'), 400
+    # Prevent duplicates
+    existing = College.query.filter(College.name == name, College.id != college_id).first()
+    if existing:
+        return jsonify(success=False, message='College name already exists'), 400
+    college.name = name
+    db.session.commit()
+    return jsonify(success=True, message='College updated')
 
 @app.route('/user/login', methods=['GET', 'POST'])
 def user_login():
@@ -240,7 +327,7 @@ def uploaded_file(participant_id, filename):
 def logout():
     session.clear()
     flash('Logged out successfully!', 'success')
-    return redirect(url_for('index'))
+    return redirect(url_for('user_login'))
 
 if __name__ == '__main__':
     with app.app_context():

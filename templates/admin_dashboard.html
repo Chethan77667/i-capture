@@ -61,15 +61,20 @@
                                 <th>College Name</th>
                                 <th>Participants</th>
                                 <th>Created Date</th>
+                                <th style="width:90px;text-align:center;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for college in colleges %}
-                            <tr>
+                            <tr class="hover-row">
                                 <td>{{ college.id }}</td>
                                 <td>{{ college.name }}</td>
                                 <td>{{ college.participants|length }}</td>
                                 <td>{{ college.created_at.strftime('%Y-%m-%d') }}</td>
+                                <td class="actions-cell">
+                                    <button class="icon-btn edit" title="Edit" onclick="openEditCollege({{ college.id }}, '{{ college.name|e }}')"><i class="fas fa-edit"></i></button>
+                                    <button class="icon-btn delete" title="Delete" onclick="confirmDeleteCollege({{ college.id }})"><i class="fas fa-trash"></i></button>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -150,11 +155,12 @@
                                 <th>College</th>
                                 <th>Uploads</th>
                                 <th>Created Date</th>
+                                <th style="width:90px;text-align:center;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for participant in participants %}
-                            <tr>
+                            <tr class="hover-row">
                                 <td>{{ participant.id }}</td>
                                 <td>{{ participant.participant_id }}</td>
                                 <td>{{ participant.name }}</td>
@@ -162,6 +168,10 @@
                                 <td>{{ participant.college.name }}</td>
                                 <td>{{ participant.uploads|length }}</td>
                                 <td>{{ participant.created_at.strftime('%Y-%m-%d') }}</td>
+                                <td class="actions-cell">
+                                    <button class="icon-btn edit" title="Edit" onclick="openEditParticipant({{ participant.id }}, '{{ participant.name|e }}', '{{ participant.phone|e }}', {{ participant.college_id }})"><i class="fas fa-edit"></i></button>
+                                    <button class="icon-btn delete" title="Delete" onclick="confirmDeleteParticipant({{ participant.id }})"><i class="fas fa-trash"></i></button>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -240,6 +250,37 @@
     color: #333;
     margin-bottom: 10px;
     font-size: 1.2rem;
+}
+
+.actions-cell {
+    text-align: center;
+}
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    padding: 6px 8px;
+    border-radius: 8px;
+    color: #888;
+    margin: 0 4px;
+    cursor: pointer;
+    opacity: 0; /* hidden by default; visible on row hover */
+    transition: all 0.2s ease;
+}
+
+.hover-row:hover .icon-btn,
+.hover-row.hovering .icon-btn {
+    opacity: 1;
+}
+
+.icon-btn.edit:hover {
+    color: #3b82f6;
+    background: rgba(59,130,246,0.08);
+}
+
+.icon-btn.delete:hover {
+    color: #ef4444;
+    background: rgba(239,68,68,0.08);
 }
 
 .participants-grid {
@@ -327,10 +368,102 @@ function showTab(tabName) {
     
     // Add active class to clicked nav tab
     event.target.classList.add('active');
+
+    // Persist active tab
+    localStorage.setItem('adminActiveTab', tabName);
+    const url = new URL(window.location);
+    url.searchParams.set('tab', tabName);
+    window.history.replaceState({}, '', url);
 }
 
 function viewParticipantFiles(participantId) {
     window.location.href = `/admin/files/${participantId}`;
+}
+
+// Restore active tab on load (from URL ?tab= or localStorage)
+document.addEventListener('DOMContentLoaded', () => {
+    const urlTab = new URL(window.location).searchParams.get('tab');
+    const saved = localStorage.getItem('adminActiveTab');
+    const tabToShow = urlTab || saved || 'colleges';
+    // Trigger the correct tab
+    document.querySelectorAll('.nav-tab').forEach(link => {
+        const href = link.getAttribute('href');
+        if (href === '#' + tabToShow) {
+            link.classList.add('active');
+        } else {
+            link.classList.remove('active');
+        }
+    });
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    const tabEl = document.getElementById(tabToShow + '-tab');
+    if (tabEl) tabEl.classList.add('active');
+});
+
+// Icon buttons hover visibility
+document.addEventListener('mouseover', (e) => {
+    const row = e.target.closest('.hover-row');
+    if (row) row.classList.add('hovering');
+});
+document.addEventListener('mouseout', (e) => {
+    const row = e.target.closest('.hover-row');
+    if (row) row.classList.remove('hovering');
+});
+
+async function confirmDeleteParticipant(id) {
+    if (!confirm('Delete this participant? This will remove uploads as well.')) return;
+    const res = await fetch(`/admin/participants/${id}/delete`, { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+        location.href = window.location.pathname + '?tab=participants';
+    } else {
+        alert(data.message || 'Delete failed');
+    }
+}
+
+async function confirmDeleteCollege(id) {
+    if (!confirm('Delete this college?')) return;
+    const res = await fetch(`/admin/colleges/${id}/delete`, { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+        location.href = window.location.pathname + '?tab=colleges';
+    } else {
+        alert(data.message || 'Delete failed');
+    }
+}
+
+function openEditParticipant(id, name, phone, collegeId) {
+    const newName = prompt('Edit participant name:', name);
+    if (newName === null) return;
+    const newPhone = prompt('Edit phone:', phone);
+    if (newPhone === null) return;
+    const newCollegeId = prompt('Edit college ID (current ' + collegeId + '):', collegeId);
+    fetch(`/admin/participants/${id}/edit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newName, phone: newPhone, college_id: newCollegeId })
+    }).then(r => r.json()).then(d => {
+        if (d.success) {
+            location.href = window.location.pathname + '?tab=participants';
+        } else {
+            alert(d.message || 'Update failed');
+        }
+    });
+}
+
+function openEditCollege(id, name) {
+    const newName = prompt('Edit college name:', name);
+    if (newName === null) return;
+    fetch(`/admin/colleges/${id}/edit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newName })
+    }).then(r => r.json()).then(d => {
+        if (d.success) {
+            location.href = window.location.pathname + '?tab=colleges';
+        } else {
+            alert(d.message || 'Update failed');
+        }
+    });
 }
 </script>
 {% endblock %}
