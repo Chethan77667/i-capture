@@ -49,6 +49,11 @@ body::before {
     z-index: 1000;
 }
 
+/* Hide empty flash container so it doesn't show in UI */
+.flash-messages:empty {
+    display: none;
+}
+
 .flash-message {
     background: white;
     padding: 15px 20px;
@@ -506,7 +511,8 @@ tr:hover {
         display: none;
     }
     .container {
-        padding: 0;
+        padding: 12px 0 0 0; /* add small top gap so header isn't cut */
+        padding-top: calc(env(safe-area-inset-top, 0px) + 12px);
     }
     
     .login-card {
@@ -566,7 +572,11 @@ tr:hover {
     }
     
     .dashboard-title {
-        font-size: 1.5rem;
+        font-size: 1.6rem;
+        white-space: normal;           /* allow wrap for very long names */
+        word-break: break-word;
+        text-align: center;
+        line-height: 1.2;
     }
     
     .card {
@@ -579,6 +589,16 @@ tr:hover {
     
     .upload-icon {
         font-size: 2.5rem;
+    }
+
+    /* Improve header spacing and prevent overlap */
+    .dashboard-header {
+        margin-bottom: 16px;
+        padding-bottom: 10px;
+    }
+    .logout-row {
+        margin-top: 8px;
+        padding-right: 12px;
     }
 }
 

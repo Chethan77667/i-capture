@@ -9,15 +9,16 @@
             <h1 class="dashboard-title">
                 <i class="fas fa-user"></i> Welcome, {{ participant.name | upper }}
             </h1>
-            <p class="user-meta">
-                <span class="meta-item"><i class="fas fa-university"></i> {{ participant.college.name }}</span>
-                <span class="meta-sep">|</span>
-                <span class="meta-item"><i class="fas fa-id-card"></i> {{ participant.participant_id }}</span>
+            <p class="user-meta" style="justify-content:center; text-align:center;">
+            <span class="meta-item"><i class="fas fa-university"></i> {{ participant.college.name }}</span>
+            <span class="meta-item"><i class="fas fa-id-card"></i> {{ participant.participant_id }}</span>
             </p>
         </div>
     </div>
     <div class="logout-row">
-        <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
+        <div class="logout-box">
+            <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
+        </div>
     </div>
     
     <div class="nav-tabs">
@@ -80,11 +81,11 @@
                 <div class="recent-item">
                     <div class="file-preview">
                         {% if upload.file_type == 'image' %}
-                            <img src="{{ url_for('uploaded_file', participant_id=participant.id, filename=upload.filename) }}" 
+                            <img src="{{ url_for('uploaded_file', participant_folder=participant.participant_id, filename=upload.filename) }}" 
                                  alt="{{ upload.original_filename }}" class="preview-image">
                         {% else %}
                             <video class="preview-video">
-                                <source src="{{ url_for('uploaded_file', participant_id=participant.id, filename=upload.filename) }}" type="video/mp4">
+                                <source src="{{ url_for('uploaded_file', participant_folder=participant.participant_id, filename=upload.filename) }}" type="video/mp4">
                             </video>
                         {% endif %}
                     </div>
@@ -121,7 +122,7 @@
                 
                 <div class="file-grid">
                     {% for upload in uploads %}
-                    <div class="file-item" data-type="{{ upload.file_type }}" onclick="previewFile('{{ url_for('uploaded_file', participant_id=participant.id, filename=upload.filename) }}', '{{ upload.file_type }}')">
+                    <div class="file-item" data-type="{{ upload.file_type }}" onclick="previewFile('{{ url_for('uploaded_file', participant_folder=participant.participant_id, filename=upload.filename) }}', '{{ upload.file_type }}')">
                         <div class="file-icon {{ upload.file_type }}">
                             {% if upload.file_type == 'image' %}
                                 <i class="fas fa-image"></i>
@@ -204,6 +205,14 @@
 }
 
 .user-meta { margin-top: 10px; }
+
+.logout-box {
+    background: #ffffff;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    border-radius: 10px;
+    padding: 6px 14px;
+}
 
 .upload-form {
     margin-bottom: 20px;
@@ -408,6 +417,26 @@
     .file-filters {
         justify-content: center;
     }
+}
+
+@media (max-width: 480px) {
+  .dashboard-title {
+    font-size: 1.3rem;
+    line-height: 1.2;
+    word-break: break-word;
+    white-space: normal;
+    text-align: center;
+  }
+  .user-meta {
+    display: block !important;
+    text-align: center;
+    margin-top: 10px;
+  }
+  .meta-item {
+    display: block;
+    margin-bottom: 3px;
+    text-align: center;
+  }
 }
 </style>
 

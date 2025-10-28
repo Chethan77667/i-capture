@@ -71,14 +71,14 @@
         
         <div id="file-grid-view" class="file-grid">
             {% for upload in uploads %}
-            <div class="file-item" data-type="{{ upload.file_type }}" onclick="previewFile('{{ url_for('uploaded_file', participant_id=participant.id, filename=upload.filename) }}', '{{ upload.file_type }}')">
+            <div class="file-item" data-type="{{ upload.file_type }}" onclick="previewFile('{{ url_for('uploaded_file', participant_folder=participant.participant_id, filename=upload.filename) }}', '{{ upload.file_type }}')">
                 <div class="file-preview">
                     {% if upload.file_type == 'image' %}
-                        <img src="{{ url_for('uploaded_file', participant_id=participant.id, filename=upload.filename) }}" 
+                        <img src="{{ url_for('uploaded_file', participant_folder=participant.participant_id, filename=upload.filename) }}" 
                              alt="{{ upload.original_filename }}" class="preview-image">
                     {% else %}
                         <video class="preview-video" muted>
-                            <source src="{{ url_for('uploaded_file', participant_id=participant.id, filename=upload.filename) }}" type="video/mp4">
+                            <source src="{{ url_for('uploaded_file', participant_folder=participant.participant_id, filename=upload.filename) }}" type="video/mp4">
                         </video>
                         <div class="video-overlay">
                             <i class="fas fa-play"></i>
@@ -104,10 +104,10 @@
         
         <div id="file-list-view" class="file-list" style="display: none;">
             {% for upload in uploads %}
-            <div class="file-list-item" data-type="{{ upload.file_type }}" onclick="previewFile('{{ url_for('uploaded_file', participant_id=participant.id, filename=upload.filename) }}', '{{ upload.file_type }}')">
+            <div class="file-list-item" data-type="{{ upload.file_type }}" onclick="previewFile('{{ url_for('uploaded_file', participant_folder=participant.participant_id, filename=upload.filename) }}', '{{ upload.file_type }}')">
                 <div class="file-icon {{ upload.file_type }}">
                     {% if upload.file_type == 'image' %}
-                        <img src="{{ url_for('uploaded_file', participant_id=participant.id, filename=upload.filename) }}" 
+                        <img src="{{ url_for('uploaded_file', participant_folder=participant.participant_id, filename=upload.filename) }}" 
                              alt="{{ upload.original_filename }}" class="list-preview-image">
                     {% else %}
                         <i class="fas fa-video"></i>

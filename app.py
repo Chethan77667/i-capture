@@ -176,13 +176,19 @@ def edit_participant(participant_id):
     data = request.get_json(silent=True) or {}
     name = data.get('name')
     phone = data.get('phone')
+    new_pid = data.get('participant_id')
     college_id = data.get('college_id')
     if name:
         participant.name = name
     if phone:
         participant.phone = phone
-    if college_id:
-        participant.college_id = int(college_id)
+    if new_pid:
+        # Ensure uniqueness
+        existing = Participant.query.filter(Participant.participant_id == new_pid, Participant.id != participant_id).first()
+        if existing:
+            return jsonify(success=False, message='Participant ID already exists'), 400
+        participant.participant_id = new_pid
+    # College is fixed; ignore incoming college_id updates
     db.session.commit()
     return jsonify(success=True, message='Participant updated')
 
@@ -231,6 +237,8 @@ def user_login():
             session['participant_id'] = participant.id
             session['participant_name'] = participant.name
             session['college_name'] = participant.college.name
+            # Save human-readable participant identifier for folder naming
+            session['participant_code'] = participant.participant_id
             flash('Login successful!', 'success')
             return redirect(url_for('user_dashboard'))
         else:
@@ -266,8 +274,13 @@ def upload_file():
     
     if file:
         # Create user-specific folder and images subfolder
-        participant_id = session['participant_id']
-        base_user_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(participant_id))
+        # Numeric database id for relations
+        participant_id = session.get('participant_id')
+        participant_code = session.get('participant_code')
+        if not participant_code:
+            # Fallback to numeric id if not present
+            participant_code = str(participant_id)
+        base_user_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(participant_code))
         images_folder = os.path.join(base_user_folder, 'images')
         os.makedirs(images_folder, exist_ok=True)
         
@@ -353,14 +366,14 @@ def admin_delete_upload(upload_id):
     db.session.commit()
     return jsonify(success=True)
 
-@app.route('/uploads/<int:participant_id>/<filename>')
-def uploaded_file(participant_id, filename):
+@app.route('/uploads/<participant_folder>/<filename>')
+def uploaded_file(participant_folder, filename):
     # Prefer new structure: uploads/<id>/images/<filename>
-    images_path = os.path.join(app.config['UPLOAD_FOLDER'], str(participant_id), 'images', filename)
+    images_path = os.path.join(app.config['UPLOAD_FOLDER'], str(participant_folder), 'images', filename)
     if os.path.exists(images_path):
         return send_file(images_path)
     # Backward compatibility: old structure uploads/<id>/<filename>
-    legacy_path = os.path.join(app.config['UPLOAD_FOLDER'], str(participant_id), filename)
+    legacy_path = os.path.join(app.config['UPLOAD_FOLDER'], str(participant_folder), filename)
     return send_file(legacy_path)
 
 @app.route('/logout')

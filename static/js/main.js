@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initAnimations();
     initFormValidation();
     initMobileMenu();
+    initFlashAutoDismiss();
 });
 
 // File Upload Functionality
@@ -264,12 +265,12 @@ function showNotification(message, type = 'info') {
     
     document.body.appendChild(notification);
     
-    // Auto remove after 5 seconds
+    // Auto remove after 2 seconds
     setTimeout(() => {
         if (notification.parentNode) {
             notification.remove();
         }
-    }, 5000);
+    }, 2000);
 }
 
 // Loading States
@@ -281,6 +282,15 @@ function showLoading(element) {
 function hideLoading(element, originalText) {
     element.innerHTML = originalText;
     element.disabled = false;
+}
+
+// Auto-dismiss Flask flash messages after 2 seconds
+function initFlashAutoDismiss() {
+    const flashes = document.querySelectorAll('.flash-message');
+    if (!flashes.length) return;
+    setTimeout(() => {
+        flashes.forEach(f => f.remove());
+    }, 2000);
 }
 
 // File Preview

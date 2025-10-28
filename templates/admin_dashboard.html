@@ -148,7 +148,7 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>S.No</th>
                                 <th>Participant ID</th>
                                 <th>Name</th>
                                 <th>Phone</th>
@@ -161,7 +161,7 @@
                         <tbody>
                             {% for participant in participants %}
                             <tr class="hover-row">
-                                <td>{{ participant.id }}</td>
+                                <td>{{ loop.index }}</td>
                                 <td>{{ participant.participant_id }}</td>
                                 <td>{{ participant.name }}</td>
                                 <td>{{ participant.phone }}</td>
@@ -169,7 +169,7 @@
                                 <td>{{ participant.uploads|length }}</td>
                                 <td>{{ participant.created_at.strftime('%Y-%m-%d') }}</td>
                                 <td class="actions-cell">
-                                    <button class="icon-btn edit" title="Edit" onclick="openEditParticipant({{ participant.id }}, '{{ participant.name|e }}', '{{ participant.phone|e }}', {{ participant.college_id }})"><i class="fas fa-edit"></i></button>
+                                    <button class="icon-btn edit" title="Edit" onclick="openEditParticipant({{ participant.id }}, '{{ participant.name|e }}', '{{ participant.phone|e }}', {{ participant.college_id }}, '{{ participant.participant_id|e }}')"><i class="fas fa-edit"></i></button>
                                     <button class="icon-btn delete" title="Delete" onclick="confirmDeleteParticipant({{ participant.id }})"><i class="fas fa-trash"></i></button>
                                 </td>
                             </tr>
@@ -264,13 +264,8 @@
     color: #888;
     margin: 0 4px;
     cursor: pointer;
-    opacity: 0; /* hidden by default; visible on row hover */
+    opacity: 1; /* always visible */
     transition: all 0.2s ease;
-}
-
-.hover-row:hover .icon-btn,
-.hover-row.hovering .icon-btn {
-    opacity: 1;
 }
 
 .icon-btn.edit:hover {
@@ -431,16 +426,18 @@ async function confirmDeleteCollege(id) {
     }
 }
 
-function openEditParticipant(id, name, phone, collegeId) {
+function openEditParticipant(id, name, phone, collegeId, currentPid) {
     const newName = prompt('Edit participant name:', name);
     if (newName === null) return;
     const newPhone = prompt('Edit phone:', phone);
     if (newPhone === null) return;
-    const newCollegeId = prompt('Edit college ID (current ' + collegeId + '):', collegeId);
+    const newPid = prompt('Edit participant ID:', currentPid);
+    if (newPid === null) return;
+    // College is fixed; do not allow editing or send any change
     fetch(`/admin/participants/${id}/edit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newName, phone: newPhone, college_id: newCollegeId })
+        body: JSON.stringify({ name: newName, phone: newPhone, participant_id: newPid })
     }).then(r => r.json()).then(d => {
         if (d.success) {
             location.href = window.location.pathname + '?tab=participants';

@@ -105,11 +105,11 @@
             <div class="file-item" data-type="{{ upload.file_type }}">
                 <div class="file-preview">
                     {% if upload.file_type == 'image' %}
-                        <img src="{{ url_for('uploaded_file', participant_id=participant.id, filename=upload.filename) }}" 
+                        <img src="{{ url_for('uploaded_file', participant_folder=participant.participant_id, filename=upload.filename) }}" 
                              alt="{{ upload.original_filename }}" class="preview-image">
                     {% else %}
                         <video class="preview-video" muted>
-                            <source src="{{ url_for('uploaded_file', participant_id=participant.id, filename=upload.filename) }}" type="video/mp4">
+                            <source src="{{ url_for('uploaded_file', participant_folder=participant.participant_id, filename=upload.filename) }}" type="video/mp4">
                         </video>
                         <div class="video-overlay">
                             <i class="fas fa-play"></i>
@@ -129,7 +129,7 @@
                         {% endif %}
                     </div>
                     <div class="admin-actions">
-                        <button class="icon-btn view" title="Preview" onclick="previewFile('{{ url_for('uploaded_file', participant_id=participant.id, filename=upload.filename) }}', '{{ upload.file_type }}')"><i class="fas fa-eye"></i></button>
+                        <button class="icon-btn view" title="Preview" onclick="previewFile('{{ url_for('uploaded_file', participant_folder=participant.participant_id, filename=upload.filename) }}', '{{ upload.file_type }}')"><i class="fas fa-eye"></i></button>
                         <button class="icon-btn delete" title="Delete" onclick="confirmDeleteUpload({{ upload.id }})"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
