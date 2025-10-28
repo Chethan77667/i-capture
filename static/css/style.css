@@ -499,8 +499,14 @@ tr:hover {
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
+    body {
+        background: #ffffff;
+    }
+    body::before {
+        display: none;
+    }
     .container {
-        padding: 10px;
+        padding: 0;
     }
     
     .login-card {
@@ -510,7 +516,10 @@ tr:hover {
     
     .dashboard-container {
         padding: 20px;
-        margin: 10px 0;
+        margin: 0;
+        border-radius: 0;
+        min-height: 100vh;
+        box-shadow: none;
     }
     
     .form-row {
@@ -548,6 +557,10 @@ tr:hover {
 }
 
 @media (max-width: 480px) {
+    body {
+        background: #ffffff;
+    }
+    body::before { display: none; }
     .login-header h1 {
         font-size: 2rem;
     }
