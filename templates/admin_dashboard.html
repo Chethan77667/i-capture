@@ -1,0 +1,336 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - iCapture{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div>
+            <h1 class="dashboard-title">
+                <i class="fas fa-tachometer-alt"></i> Admin Dashboard
+            </h1>
+            <p>Manage colleges, participants, and view all uploads</p>
+        </div>
+        <a href="{{ url_for('logout') }}" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </div>
+    
+    <div class="nav-tabs">
+        <a href="#colleges" class="nav-tab active" onclick="showTab('colleges')">
+            <i class="fas fa-university"></i> Colleges
+        </a>
+        <a href="#participants" class="nav-tab" onclick="showTab('participants')">
+            <i class="fas fa-users"></i> Participants
+        </a>
+        <a href="#files" class="nav-tab" onclick="showTab('files')">
+            <i class="fas fa-folder"></i> All Files
+        </a>
+    </div>
+    
+    <!-- Colleges Tab -->
+    <div id="colleges-tab" class="tab-content active">
+        <div class="card">
+            <h2 class="card-title">
+                <i class="fas fa-plus-circle"></i> Add New College
+            </h2>
+            <form method="POST" action="{{ url_for('add_college') }}">
+                <div class="form-group">
+                    <label for="college-name">
+                        <i class="fas fa-university"></i> College Name
+                    </label>
+                    <input type="text" id="college-name" name="name" required 
+                           placeholder="Enter college name">
+                </div>
+                <button type="submit" class="btn">
+                    <i class="fas fa-plus"></i> Add College
+                </button>
+            </form>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <i class="fas fa-list"></i> All Colleges
+            </h2>
+            {% if colleges %}
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>College Name</th>
+                                <th>Participants</th>
+                                <th>Created Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for college in colleges %}
+                            <tr>
+                                <td>{{ college.id }}</td>
+                                <td>{{ college.name }}</td>
+                                <td>{{ college.participants|length }}</td>
+                                <td>{{ college.created_at.strftime('%Y-%m-%d') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-university"></i>
+                    <h3>No Colleges Found</h3>
+                    <p>Add your first college to get started</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Participants Tab -->
+    <div id="participants-tab" class="tab-content">
+        <div class="card">
+            <h2 class="card-title">
+                <i class="fas fa-user-plus"></i> Add New Participant
+            </h2>
+            <form method="POST" action="{{ url_for('add_participant') }}">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="participant-id">
+                            <i class="fas fa-id-card"></i> Participant ID
+                        </label>
+                        <input type="text" id="participant-id" name="participant_id" required 
+                               placeholder="Enter participant ID">
+                    </div>
+                    <div class="form-group">
+                        <label for="participant-name">
+                            <i class="fas fa-user"></i> Full Name
+                        </label>
+                        <input type="text" id="participant-name" name="name" required 
+                               placeholder="Enter full name">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="participant-phone">
+                            <i class="fas fa-phone"></i> Phone Number
+                        </label>
+                        <input type="tel" id="participant-phone" name="phone" required 
+                               placeholder="Enter phone number">
+                    </div>
+                    <div class="form-group">
+                        <label for="college-select">
+                            <i class="fas fa-university"></i> College
+                        </label>
+                        <select id="college-select" name="college_id" required>
+                            <option value="">Select College</option>
+                            {% for college in colleges %}
+                            <option value="{{ college.id }}">{{ college.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn">
+                    <i class="fas fa-plus"></i> Add Participant
+                </button>
+            </form>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <i class="fas fa-users"></i> All Participants
+            </h2>
+            {% if participants %}
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Participant ID</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>College</th>
+                                <th>Uploads</th>
+                                <th>Created Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for participant in participants %}
+                            <tr>
+                                <td>{{ participant.id }}</td>
+                                <td>{{ participant.participant_id }}</td>
+                                <td>{{ participant.name }}</td>
+                                <td>{{ participant.phone }}</td>
+                                <td>{{ participant.college.name }}</td>
+                                <td>{{ participant.uploads|length }}</td>
+                                <td>{{ participant.created_at.strftime('%Y-%m-%d') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-users"></i>
+                    <h3>No Participants Found</h3>
+                    <p>Add participants to start collecting uploads</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Files Tab -->
+    <div id="files-tab" class="tab-content">
+        <div class="card">
+            <h2 class="card-title">
+                <i class="fas fa-folder-open"></i> All Participant Files
+            </h2>
+            <p>Click on a participant to view their uploaded files</p>
+            
+            {% if participants %}
+                <div class="participants-grid">
+                    {% for participant in participants %}
+                    <div class="participant-card" onclick="viewParticipantFiles({{ participant.id }})">
+                        <div class="participant-info">
+                            <h3>{{ participant.name }}</h3>
+                            <p><i class="fas fa-id-card"></i> {{ participant.participant_id }}</p>
+                            <p><i class="fas fa-university"></i> {{ participant.college.name }}</p>
+                            <p><i class="fas fa-phone"></i> {{ participant.phone }}</p>
+                        </div>
+                        <div class="upload-count">
+                            <i class="fas fa-upload"></i>
+                            <span>{{ participant.uploads|length }} files</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-folder-open"></i>
+                    <h3>No Participants Found</h3>
+                    <p>Add participants to view their files</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: #ccc;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.empty-state h3 {
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+.participants-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.participant-card {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.participant-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    border-color: #667eea;
+}
+
+.participant-info h3 {
+    color: #333;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.participant-info p {
+    color: #666;
+    margin: 5px 0;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.participant-info i {
+    color: #667eea;
+    width: 16px;
+}
+
+.upload-count {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #f0f0f0;
+    text-align: center;
+    color: #667eea;
+    font-weight: 600;
+}
+
+.upload-count i {
+    margin-right: 8px;
+}
+
+@media (max-width: 768px) {
+    .participants-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+function showTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Remove active class from all nav tabs
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Show selected tab
+    document.getElementById(tabName + '-tab').classList.add('active');
+    
+    // Add active class to clicked nav tab
+    event.target.classList.add('active');
+}
+
+function viewParticipantFiles(participantId) {
+    window.location.href = `/admin/files/${participantId}`;
+}
+</script>
+{% endblock %}

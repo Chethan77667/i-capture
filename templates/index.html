@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}iCapture - Welcome{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h1><i class="fas fa-camera"></i> iCapture</h1>
+            <p>Capture, Upload & Share Your Moments</p>
+        </div>
+        
+        <div class="welcome-content">
+            <div class="welcome-text">
+                <h2>Welcome to iCapture</h2>
+                <p>Your digital platform for capturing and sharing memories. Choose your role to get started:</p>
+            </div>
+            
+            <div class="role-buttons">
+                <a href="{{ url_for('admin_login') }}" class="role-btn admin-btn">
+                    <i class="fas fa-user-shield"></i>
+                    <h3>Admin Login</h3>
+                    <p>Manage colleges and participants</p>
+                </a>
+                
+                <a href="{{ url_for('user_login') }}" class="role-btn user-btn">
+                    <i class="fas fa-user"></i>
+                    <h3>Participant Login</h3>
+                    <p>Upload and view your files</p>
+                </a>
+            </div>
+            
+            <div class="features">
+                <h3>Features</h3>
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <i class="fas fa-university"></i>
+                        <span>College Management</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-users"></i>
+                        <span>Participant Registration</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-upload"></i>
+                        <span>File Upload</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-eye"></i>
+                        <span>File Viewing</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.welcome-content {
+    text-align: center;
+}
+
+.welcome-text h2 {
+    color: #333;
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.welcome-text p {
+    color: #666;
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+.role-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.role-btn {
+    background: white;
+    border: 2px solid #e1e5e9;
+    border-radius: 15px;
+    padding: 30px 20px;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.role-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.role-btn:hover::before {
+    left: 100%;
+}
+
+.role-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.admin-btn:hover {
+    border-color: #667eea;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+}
+
+.user-btn:hover {
+    border-color: #4CAF50;
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(139, 195, 74, 0.1));
+}
+
+.role-btn i {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.admin-btn i {
+    color: #667eea;
+}
+
+.user-btn i {
+    color: #4CAF50;
+}
+
+.role-btn h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.role-btn p {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.features h3 {
+    color: #333;
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+}
+
+.feature-item {
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 10px;
+    padding: 15px 10px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.feature-item:hover {
+    background: rgba(102, 126, 234, 0.2);
+    transform: translateY(-2px);
+}
+
+.feature-item i {
+    font-size: 1.5rem;
+    color: #667eea;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.feature-item span {
+    font-size: 0.8rem;
+    color: #333;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .role-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    .feature-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .role-btn {
+        padding: 25px 15px;
+    }
+    
+    .role-btn i {
+        font-size: 2rem;
+    }
+}
+</style>
+{% endblock %}
