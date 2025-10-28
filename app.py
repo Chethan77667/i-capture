@@ -349,12 +349,14 @@ def admin_delete_upload(upload_id):
         return jsonify(success=False, message='Unauthorized'), 401
     upload = FileUpload.query.get_or_404(upload_id)
     participant_id = upload.participant_id
-    base_user_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(participant_id))
-    images_folder = os.path.join(base_user_folder, 'images')
-    # Prefer new path
+    participant = Participant.query.get(participant_id)
+    participant_code = participant.participant_id if participant else str(participant_id)
+    # Try both new (participant_code) and legacy (numeric id) folder structures
     candidate_paths = [
-        os.path.join(images_folder, upload.filename),
-        os.path.join(base_user_folder, upload.filename),
+        os.path.join(app.config['UPLOAD_FOLDER'], str(participant_code), 'images', upload.filename),
+        os.path.join(app.config['UPLOAD_FOLDER'], str(participant_code), upload.filename),
+        os.path.join(app.config['UPLOAD_FOLDER'], str(participant_id), 'images', upload.filename),
+        os.path.join(app.config['UPLOAD_FOLDER'], str(participant_id), upload.filename),
     ]
     for p in candidate_paths:
         try:
@@ -365,6 +367,38 @@ def admin_delete_upload(upload_id):
     db.session.delete(upload)
     db.session.commit()
     return jsonify(success=True)
+
+@app.route('/user/upload/<int:upload_id>/delete', methods=['POST'])
+def user_delete_upload(upload_id):
+    if not session.get('user_logged_in'):
+        return jsonify(success=False, message='Unauthorized'), 401
+    upload = FileUpload.query.get_or_404(upload_id)
+    # Ensure the upload belongs to the logged-in user
+    if upload.participant_id != session.get('participant_id'):
+        return jsonify(success=False, message='Forbidden'), 403
+    participant_id = upload.participant_id
+    participant = Participant.query.get(participant_id)
+    participant_code = session.get('participant_code') or (participant.participant_id if participant else str(participant_id))
+    # Try multiple possible file locations
+    candidate_paths = [
+        os.path.join(app.config['UPLOAD_FOLDER'], str(participant_code), 'images', upload.filename),
+        os.path.join(app.config['UPLOAD_FOLDER'], str(participant_code), upload.filename),
+        os.path.join(app.config['UPLOAD_FOLDER'], str(participant_id), 'images', upload.filename),
+        os.path.join(app.config['UPLOAD_FOLDER'], str(participant_id), upload.filename),
+    ]
+    deleted_from_disk = False
+    for p in candidate_paths:
+        try:
+            if os.path.exists(p):
+                os.remove(p)
+                deleted_from_disk = True
+                break
+        except Exception:
+            pass
+    # Remove from database regardless of disk deletion success to keep UI consistent
+    db.session.delete(upload)
+    db.session.commit()
+    return jsonify(success=True, removed=deleted_from_disk)
 
 @app.route('/uploads/<participant_folder>/<filename>')
 def uploaded_file(participant_folder, filename):

@@ -244,6 +244,22 @@ body::before {
     font-weight: 700;
 }
 
+/* User header meta info (college, participant id) */
+.user-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+}
+
+.user-meta .meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .logout-btn {
     background: linear-gradient(135deg, #ff6b6b, #ee5a24);
     color: white;
@@ -578,6 +594,9 @@ tr:hover {
         text-align: center;
         line-height: 1.2;
     }
+    /* Stack meta items vertically on very small screens */
+    .user-meta { display: block; }
+    .user-meta .meta-item { display: block; margin-bottom: 4px; }
     
     .card {
         padding: 20px;

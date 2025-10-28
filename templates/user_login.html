@@ -42,6 +42,10 @@
 </div>
 
 <style>
+.container {
+    max-width: none;   /* allow full-bleed background on login page */
+    padding: 0;        /* remove side gutters so gradient reaches edges */
+}
 .login-container {
     min-height: 100vh;
     display: flex;
@@ -221,6 +225,7 @@
 }
 
 @media (max-width: 768px) {
+    .container { padding: 0; }
     .login-container {
         padding: 15px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -256,6 +261,7 @@
 }
 
 @media (max-width: 480px) {
+    .container { padding: 0; }
     .login-container {
         padding: 10px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);

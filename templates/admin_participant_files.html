@@ -139,10 +139,10 @@
         
         <div id="file-list-view" class="file-list" style="display: none;">
             {% for upload in uploads %}
-            <div class="file-list-item" data-type="{{ upload.file_type }}" onclick="previewFile('{{ url_for('uploaded_file', participant_id=participant.id, filename=upload.filename) }}', '{{ upload.file_type }}')">
+            <div class="file-list-item" data-type="{{ upload.file_type }}" onclick="previewFile('{{ url_for('uploaded_file', participant_folder=participant.participant_id, filename=upload.filename) }}', '{{ upload.file_type }}')">
                 <div class="file-icon {{ upload.file_type }}">
                     {% if upload.file_type == 'image' %}
-                        <img src="{{ url_for('uploaded_file', participant_id=participant.id, filename=upload.filename) }}" 
+                        <img src="{{ url_for('uploaded_file', participant_folder=participant.participant_id, filename=upload.filename) }}" 
                              alt="{{ upload.original_filename }}" class="list-preview-image">
                     {% else %}
                         <i class="fas fa-video"></i>
