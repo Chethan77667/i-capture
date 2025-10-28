@@ -14,7 +14,7 @@ function initFileUpload() {
     const fileInput = document.getElementById('file-input');
     
     if (uploadArea && fileInput) {
-        // Click to upload
+        // Click to choose file
         uploadArea.addEventListener('click', () => {
             fileInput.click();
         });
@@ -52,9 +52,13 @@ function initFileUpload() {
 function handleFileSelect(file) {
     const uploadArea = document.querySelector('.upload-area');
     const fileInfo = document.querySelector('.file-info');
+    const uploadBtn = document.getElementById('upload-submit');
     
     // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'video/mp4', 'video/avi', 'video/mov'];
+    const allowedTypes = [
+        'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif',
+        'video/mp4', 'video/quicktime', /* mov */ 'video/x-msvideo' /* avi */
+    ];
     if (!allowedTypes.includes(file.type)) {
         showNotification('Please select a valid image or video file.', 'error');
         return;
@@ -67,23 +71,46 @@ function handleFileSelect(file) {
         return;
     }
     
-    // Show file info
+    // Show file info/preview
     if (fileInfo) {
-        fileInfo.innerHTML = `
-            <div class="file-preview">
-                <i class="fas fa-${file.type.startsWith('image/') ? 'image' : 'video'} file-icon ${file.type.startsWith('image/') ? 'image' : 'video'}"></i>
-                <p class="file-name">${file.name}</p>
-                <p class="file-size">${formatFileSize(file.size)}</p>
-            </div>
-        `;
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                fileInfo.innerHTML = `
+                    <div class="file-preview">
+                        <img src="${reader.result}" alt="preview" style="max-width: 160px; max-height: 120px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+                        <p class="file-name">${file.name}</p>
+                        <p class="file-size">${formatFileSize(file.size)}</p>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            fileInfo.innerHTML = `
+                <div class="file-preview">
+                    <i class="fas fa-video file-icon video"></i>
+                    <p class="file-name">${file.name}</p>
+                    <p class="file-size">${formatFileSize(file.size)}</p>
+                </div>
+            `;
+        }
     }
     
-    // Auto-submit form
-    const form = document.querySelector('form[enctype="multipart/form-data"]');
-    if (form) {
-        setTimeout(() => {
-            form.submit();
-        }, 1000);
+    // Enable upload button for manual single submit
+    if (uploadBtn) {
+        uploadBtn.disabled = false;
+        uploadBtn.onclick = () => {
+            const form = document.querySelector('form[enctype="multipart/form-data"]');
+            if (form) {
+                if (typeof form.requestSubmit === 'function') {
+                    form.requestSubmit();
+                } else {
+                    form.submit();
+                }
+                // Prevent duplicate submits
+                uploadBtn.disabled = true;
+            }
+        };
     }
 }
 
@@ -133,6 +160,9 @@ function initFormValidation() {
     const forms = document.querySelectorAll('form');
     
     forms.forEach(form => {
+        if (form.classList && form.classList.contains('no-validate')) {
+            return; // skip validation on forms marked as no-validate (e.g., upload)
+        }
         form.addEventListener('submit', function(e) {
             const requiredFields = form.querySelectorAll('[required]');
             let isValid = true;

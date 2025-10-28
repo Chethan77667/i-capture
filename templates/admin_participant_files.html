@@ -12,9 +12,7 @@
             <p><i class="fas fa-id-card"></i> {{ participant.participant_id }} | <i class="fas fa-university"></i> {{ participant.college.name }}</p>
         </div>
         <div class="header-actions">
-            <a href="{{ url_for('admin_files') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back to All Files
-            </a>
+           
             <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
                 <i class="fas fa-tachometer-alt"></i> Dashboard
             </a>
@@ -104,7 +102,7 @@
         
         <div id="file-grid-view" class="file-grid">
             {% for upload in uploads %}
-            <div class="file-item" data-type="{{ upload.file_type }}" onclick="previewFile('{{ url_for('uploaded_file', participant_id=participant.id, filename=upload.filename) }}', '{{ upload.file_type }}')">
+            <div class="file-item" data-type="{{ upload.file_type }}">
                 <div class="file-preview">
                     {% if upload.file_type == 'image' %}
                         <img src="{{ url_for('uploaded_file', participant_id=participant.id, filename=upload.filename) }}" 
@@ -129,6 +127,10 @@
                         {% else %}
                             <i class="fas fa-video"></i> Video
                         {% endif %}
+                    </div>
+                    <div class="admin-actions">
+                        <button class="icon-btn view" title="Preview" onclick="previewFile('{{ url_for('uploaded_file', participant_id=participant.id, filename=upload.filename) }}', '{{ upload.file_type }}')"><i class="fas fa-eye"></i></button>
+                        <button class="icon-btn delete" title="Delete" onclick="confirmDeleteUpload({{ upload.id }})"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
             </div>
@@ -486,6 +488,31 @@
     gap: 5px;
 }
 
+.admin-actions {
+    margin-top: 10px;
+}
+
+.icon-btn {
+    background: transparent;
+    border: 2px solid #e1e5e9;
+    color: #888;
+    border-radius: 8px;
+    padding: 6px 10px;
+    margin-right: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.icon-btn.view:hover {
+    color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.icon-btn.delete:hover {
+    color: #ef4444;
+    border-color: #ef4444;
+}
+
 .empty-state {
     text-align: center;
     padding: 60px 20px;
@@ -621,6 +648,24 @@ function previewFile(fileUrl, fileType) {
             modal.remove();
         }
     });
+}
+
+async function confirmDeleteUpload(uploadId) {
+    // Generate a 4-digit confirmation code
+    const code = Math.floor(1000 + Math.random() * 9000);
+    const entered = prompt(`Type ${code} to permanently delete this file.`);
+    if (entered === null) return; // cancelled
+    if (String(entered).trim() !== String(code)) {
+        alert('Incorrect code. Deletion cancelled.');
+        return;
+    }
+    const res = await fetch(`/admin/upload/${uploadId}/delete`, { method: 'POST' });
+    const data = await res.json();
+    if (data && data.success) {
+        location.reload();
+    } else {
+        alert(data.message || 'Delete failed');
+    }
 }
 </script>
 {% endblock %}

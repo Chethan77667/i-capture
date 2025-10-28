@@ -141,9 +141,13 @@ def delete_participant(participant_id):
     participant = Participant.query.get_or_404(participant_id)
     # Delete files from disk and db
     uploads = FileUpload.query.filter_by(participant_id=participant_id).all()
-    user_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(participant_id))
+    base_user_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(participant_id))
+    images_folder = os.path.join(base_user_folder, 'images')
     for upload in uploads:
-        file_path = os.path.join(user_folder, upload.filename)
+        # Try new structure first
+        file_path = os.path.join(images_folder, upload.filename)
+        if not os.path.exists(file_path):
+            file_path = os.path.join(base_user_folder, upload.filename)
         try:
             if os.path.exists(file_path):
                 os.remove(file_path)
@@ -151,8 +155,13 @@ def delete_participant(participant_id):
             pass
         db.session.delete(upload)
     try:
-        if os.path.isdir(user_folder) and not os.listdir(user_folder):
-            os.rmdir(user_folder)
+        # Clean up empty images folder and base folder if applicable
+        if os.path.isdir(images_folder) and not os.listdir(images_folder):
+            os.rmdir(images_folder)
+        if os.path.isdir(base_user_folder):
+            remaining = [f for f in os.listdir(base_user_folder) if f != 'images' or os.path.isdir(os.path.join(base_user_folder,'images')) and os.listdir(os.path.join(base_user_folder,'images'))]
+            if not remaining:
+                os.rmdir(base_user_folder)
     except Exception:
         pass
     db.session.delete(participant)
@@ -208,12 +217,13 @@ def edit_college(college_id):
 @app.route('/user/login', methods=['GET', 'POST'])
 def user_login():
     if request.method == 'POST':
-        participant_id = request.form['participant_id']
-        phone = request.form['phone']
+        participant_id = (request.form['participant_id'] or '').strip()
+        phone = (request.form['phone'] or '').strip()
         
-        participant = Participant.query.filter_by(
-            participant_id=participant_id,
-            phone=phone
+        # Case-insensitive lookup for participant_id
+        participant = Participant.query.filter(
+            db.func.lower(Participant.participant_id) == participant_id.lower(),
+            Participant.phone == phone
         ).first()
         
         if participant:
@@ -255,10 +265,11 @@ def upload_file():
         return redirect(url_for('user_dashboard'))
     
     if file:
-        # Create user-specific folder
+        # Create user-specific folder and images subfolder
         participant_id = session['participant_id']
-        user_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(participant_id))
-        os.makedirs(user_folder, exist_ok=True)
+        base_user_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(participant_id))
+        images_folder = os.path.join(base_user_folder, 'images')
+        os.makedirs(images_folder, exist_ok=True)
         
         # Get next file number
         existing_files = FileUpload.query.filter_by(participant_id=participant_id).count()
@@ -267,12 +278,12 @@ def upload_file():
         # Determine file type
         file_type = 'image' if file.content_type.startswith('image/') else 'video'
         
-        # Generate filename
+        # Generate filename as numeric sequence (e.g., 1.jpg, 2.png)
         file_extension = os.path.splitext(file.filename)[1]
-        filename = f"p{file_number}{file_extension}"
+        filename = f"{file_number}{file_extension}"
         
-        # Save file
-        file_path = os.path.join(user_folder, filename)
+        # Save file inside images folder (as requested structure)
+        file_path = os.path.join(images_folder, filename)
         file.save(file_path)
         
         # Save to database
@@ -319,9 +330,38 @@ def admin_participant_files(participant_id):
                          participant=participant, 
                          uploads=uploads)
 
+@app.route('/admin/upload/<int:upload_id>/delete', methods=['POST'])
+def admin_delete_upload(upload_id):
+    if not session.get('admin_logged_in'):
+        return jsonify(success=False, message='Unauthorized'), 401
+    upload = FileUpload.query.get_or_404(upload_id)
+    participant_id = upload.participant_id
+    base_user_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(participant_id))
+    images_folder = os.path.join(base_user_folder, 'images')
+    # Prefer new path
+    candidate_paths = [
+        os.path.join(images_folder, upload.filename),
+        os.path.join(base_user_folder, upload.filename),
+    ]
+    for p in candidate_paths:
+        try:
+            if os.path.exists(p):
+                os.remove(p)
+        except Exception:
+            pass
+    db.session.delete(upload)
+    db.session.commit()
+    return jsonify(success=True)
+
 @app.route('/uploads/<int:participant_id>/<filename>')
 def uploaded_file(participant_id, filename):
-    return send_file(os.path.join(app.config['UPLOAD_FOLDER'], str(participant_id), filename))
+    # Prefer new structure: uploads/<id>/images/<filename>
+    images_path = os.path.join(app.config['UPLOAD_FOLDER'], str(participant_id), 'images', filename)
+    if os.path.exists(images_path):
+        return send_file(images_path)
+    # Backward compatibility: old structure uploads/<id>/<filename>
+    legacy_path = os.path.join(app.config['UPLOAD_FOLDER'], str(participant_id), filename)
+    return send_file(legacy_path)
 
 @app.route('/logout')
 def logout():
